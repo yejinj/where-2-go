@@ -34,9 +34,8 @@
 - **Fetch API**: 데이터 통신  
 
 ### Backend  
-- **Spring Boot**: 안정적인 API 구축  
-- **RESTful API**: 표준화된 데이터 교환  
-- **Express.js**: Node.js 기반 API 라우팅  
+- Node.js 기반 API 라우팅
+  
   <br><br><br>
 ## 📡 API 구조  
 
