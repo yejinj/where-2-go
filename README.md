@@ -167,4 +167,7 @@ node index.js
 - 즐겨찾기 기능  
 
 <br><br><br>
+
+<div align = "center">
 **WhereToGo**와 함께 더 즐거운 여행을 만들어보세요! 😊  
+</div>
