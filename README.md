@@ -169,5 +169,5 @@ node index.js
 <br><br><br>
 
 <div align = "center">
-**WhereToGo**와 함께 더 즐거운 여행을 만들어보세요! 😊  
+  <b>WhereToGo</b>와 함께 더 즐거운 여행을 만들어보세요! 😊  
 </div>
