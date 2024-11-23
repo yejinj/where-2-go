@@ -34,7 +34,7 @@
 - **Fetch API**: 데이터 통신  
 
 ### Backend  
-- Node.js 기반 API 라우팅
+- **Node.js** 기반 API 라우팅
   
   <br><br><br>
 ## 📡 API 구조  
