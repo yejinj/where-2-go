@@ -6,6 +6,36 @@ import PlaceList from '../components/PlaceList';
 import WeatherRecommendations from '../components/WeatherRecommendations';
 import '../styles/MainPage.css';
 
+const LoadingSpinner = () => (
+  <div className="loading-container">
+    <div className="loading-spinner"></div>
+    <p>데이터를 불러오는 중입니다...</p>
+  </div>
+);
+
+const ErrorMessage = ({ message, onRetry }) => (
+  <div className="error-container">
+    <p>오류가 발생했습니다: {message}</p>
+    <button onClick={onRetry}>다시 시도</button>
+  </div>
+);
+
+const WeatherInfo = ({ weatherData }) => (
+  <div className="weather-info-box">
+    <div className="weather-current">
+      <span className="weather-temp">{weatherData.weather.temp}°C</span>
+      <span className="weather-desc">{weatherData.weather.description}</span>
+    </div>
+  </div>
+);
+
+const CategoryPlacesSection = ({ categoryPlaces }) => (
+  <div className="category-section">
+    <h3>{categoryPlaces.category} 추천 장소</h3>
+    <PlaceList places={categoryPlaces.places} />
+  </div>
+);
+
 const MainPage = () => {
   const [selectedCity, setSelectedCity] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -15,72 +45,39 @@ const MainPage = () => {
   const [error, setError] = useState(null);
   const [step, setStep] = useState(1);
 
+  const fetchData = async (fetchFn, setDataFn, ...params) => {
+    if (!params[0]) {
+      setDataFn(null);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const result = await fetchFn(...params);
+      setDataFn(result);
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchWeatherData = async () => {
-      if (!selectedCity) {
-        setWeatherData(null);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        const result = await getWeatherAndPlaces(selectedCity);
-        setWeatherData(result);
-        setError(null);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchWeatherData();
+    fetchData(getWeatherAndPlaces, setWeatherData, selectedCity);
   }, [selectedCity]);
 
   useEffect(() => {
-    const fetchCategoryPlaces = async () => {
-      if (!selectedCategory || !selectedCity) {
-        setCategoryPlaces(null);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        const result = await getCategoryPlaces(selectedCity, selectedCategory);
-        setCategoryPlaces(result);
-        setError(null);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCategoryPlaces();
+    fetchData(getCategoryPlaces, setCategoryPlaces, selectedCity, selectedCategory);
   }, [selectedCity, selectedCategory]);
 
   const handleCitySelect = (city) => {
     setSelectedCity(city);
     setSelectedCategory(null);
-    if (city) {
-      setStep(2);
-    } else {
-      setStep(1);
-    }
+    setStep(city ? 2 : 1);
   };
 
-  const handleCategorySelect = (categoryId) => {
-    setSelectedCategory(categoryId);
-  };
-
-  if (loading) {
-    return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>데이터를 불러오는 중입니다...</p>
-      </div>
-    );
-  }
+  if (loading) return <LoadingSpinner />;
 
   return (
     <div className="main-page">
@@ -105,29 +102,17 @@ const MainPage = () => {
               <div className="selector-content">
                 <CategorySelector
                   selectedCategory={selectedCategory}
-                  onCategorySelect={handleCategorySelect}
+                  onCategorySelect={setSelectedCategory}
                 />
               </div>
             </div>
           )}
 
-          {weatherData && selectedCity && (
-            <div className="weather-info-box">
-              <div className="weather-current">
-                <span className="weather-temp">{weatherData.weather.temp}°C</span>
-                <span className="weather-desc">{weatherData.weather.description}</span>
-              </div>
-            </div>
-          )}
+          {weatherData && selectedCity && <WeatherInfo weatherData={weatherData} />}
         </div>
       </div>
 
-      {error && (
-        <div className="error-container">
-          <p>오류가 발생했습니다: {error}</p>
-          <button onClick={() => window.location.reload()}>다시 시도</button>
-        </div>
-      )}
+      {error && <ErrorMessage message={error} onRetry={() => window.location.reload()} />}
 
       {weatherData && selectedCity && (
         <div className="weather-section">
@@ -135,11 +120,8 @@ const MainPage = () => {
         </div>
       )}
 
-      {categoryPlaces && categoryPlaces.places && categoryPlaces.places.length > 0 && (
-        <div className="category-section">
-          <h3>{categoryPlaces.category} 추천 장소</h3>
-          <PlaceList places={categoryPlaces.places} />
-        </div>
+      {categoryPlaces?.places?.length > 0 && (
+        <CategoryPlacesSection categoryPlaces={categoryPlaces} />
       )}
     </div>
   );
