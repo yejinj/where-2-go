@@ -1,17 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import PropTypes from 'prop-types';
 import { getCategoryPlaces } from '../api/api';
 import PlaceList from '../components/PlaceList';
 import CitySelector from '../components/CitySelector';
+import { CATEGORY_MAP } from '../constants/categories';
 import '../styles/CategoryPage.css';
-
-const CATEGORY_MAP = {
-  'nature': '자연',
-  'history': '역사',
-  'festival': '축제/행사',
-  'shopping': '쇼핑',
-  'restaurant': '음식점'
-};
 
 const LoadingSpinner = () => (
   <div className="loading-container">
@@ -20,14 +14,27 @@ const LoadingSpinner = () => (
   </div>
 );
 
-const ErrorMessage = ({ error }) => (
-  <div className="error-container">
-    <p>오류가 발생했습니다: {error}</p>
-    <button onClick={() => window.location.reload()}>다시 시도</button>
-  </div>
-);
+const ErrorMessage = ({ error }) => {
+  ErrorMessage.propTypes = {
+    error: PropTypes.string.isRequired
+  };
+  
+  return (
+    <div className="error-container">
+      <p>오류가 발생했습니다: {error}</p>
+      <button onClick={() => window.location.reload()}>다시 시도</button>
+    </div>
+  );
+};
 
 const SubCategoryFilters = ({ data, categoryId, selectedSubCategory, setSelectedSubCategory }) => {
+  SubCategoryFilters.propTypes = {
+    data: PropTypes.object,
+    categoryId: PropTypes.string.isRequired,
+    selectedSubCategory: PropTypes.string.isRequired,
+    setSelectedSubCategory: PropTypes.func.isRequired
+  };
+
   const subCategories = data?.categories?.find(cat => cat.id === categoryId)?.subCategories;
   
   if (!subCategories) return null;
@@ -66,6 +73,8 @@ const CategoryPage = () => {
   const getCategoryName = (id) => CATEGORY_MAP[id] || id;
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchData = async () => {
       try {
         setState(prev => ({ ...prev, loading: true }));
@@ -74,13 +83,21 @@ const CategoryPage = () => {
           categoryId, 
           selectedSubCategory
         );
-        setState({ data: result, loading: false, error: null });
+        if (isMounted) {
+          setState({ data: result, loading: false, error: null });
+        }
       } catch (err) {
-        setState({ data: null, loading: false, error: err.message });
+        if (isMounted) {
+          setState({ data: null, loading: false, error: err.message });
+        }
       }
     };
 
     fetchData();
+
+    return () => {
+      isMounted = false;
+    };
   }, [categoryId, selectedSubCategory, selectedCity]);
 
   if (state.loading) return <LoadingSpinner />;
