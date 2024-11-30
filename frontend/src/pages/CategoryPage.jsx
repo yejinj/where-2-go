@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { getCategoryPlaces } from '../api/api';
 import PlaceList from '../components/PlaceList';
 import CitySelector from '../components/CitySelector';
-import { CATEGORY_MAP } from '../constants/categories';
+import CategorySelector from '../components/CategorySelector';
 import '../styles/CategoryPage.css';
 
 const LoadingSpinner = () => (
@@ -70,7 +70,10 @@ const CategoryPage = () => {
   const [selectedSubCategory, setSelectedSubCategory] = useState('');
   const [selectedCity, setSelectedCity] = useState('서울');
 
-  const getCategoryName = (id) => CATEGORY_MAP[id] || id;
+  const getCategoryName = (id) => {
+    const category = CategorySelector.categories?.find(cat => cat.id === id);
+    return category ? category.name : id;
+  };
 
   useEffect(() => {
     let isMounted = true;
